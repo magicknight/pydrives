@@ -79,8 +79,8 @@ if __name__ == '__main__':
             for each_second_file in second_files:
                 print(each_second_file['title'], each_file['id'], each_file['mimeType'])
             print('uploading a file to folder', each_file['title'])
-            uploaded_file = google_drive.upload('/home/zhihua/website/backup/Cmswing_2/www/static/thumbNails/drama/57fb1d5e9cc87a7f7f2119b9',
-                                each_file['id'])
+            uploaded_file = google_drive.upload('/home/zhihua/temp/57fb1d5e9cc87a7f7f2119b9',
+                                                each_file['id'])
             google_drive.download(uploaded_file['id'], '/home/zhihua/temp')
 
 

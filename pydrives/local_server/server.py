@@ -2,6 +2,7 @@
 from flask import request
 from flask import Flask
 import redis
+from pydrives.config import config
 
 app = Flask(__name__)
 
@@ -15,8 +16,8 @@ def get_auth_key():
 
 
 if __name__ == "__main__":
-    r = redis.StrictRedis(host='localhost', port=6379, db=0)
-    app.run(host='localhost', port=8080, threaded=True, debug=True)
+    r = redis.StrictRedis(host=config['redis']['host'], port=config['redis']['port'], db=config['redis']['db'])
+    app.run(host=config['redirect']['host'], port=config['redirect']['port'], threaded=True, debug=True)
 
 
 

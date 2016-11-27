@@ -3,9 +3,9 @@ import webbrowser
 import redis
 import os
 from time import sleep
-from pprint import pprint
 from boxsdk import OAuth2
 from boxsdk import Client
+from pydrives.config import config
 
 
 class Box:
@@ -17,11 +17,11 @@ class Box:
         self.access_token = None
         self.user = None
         self.oauth = OAuth2(
-            client_id='77bubh1k3d3f0e06606o6mcuvl1w6brg',
-            client_secret='c77Xma34aNdvBMkURvElDGS4RNO3goZh'
+            client_id=config['the_box']['client_id'],
+            client_secret=config['the_box']['client_secret']
         )
-        self.redirect_url = 'http://localhost:8080'
-        self.root_directory = '0'
+        self.redirect_url = config['redirect']['url']
+        self.root_directory = config['the_box']['root_directory']
 
     def authorization(self):
         self.authorization_url, self.refresh_token = self.oauth.get_authorization_url(self.redirect_url)
@@ -37,7 +37,7 @@ class Box:
         get auth code for oauth
         :return: auth code
         """
-        r = redis.StrictRedis(host='localhost', port=6379, db=0)
+        r = redis.StrictRedis(host=config['redis']['host'], port=config['redis']['port'], db=config['redis']['db'])
         for i in range(60):
             auth_code = r.get(self.refresh_token)
             if not auth_code:
@@ -49,15 +49,27 @@ class Box:
         return False
 
     def list(self, folder_id, limits=100):
+        """
+        list files in a remote folder
+        :param folder_id:
+        :param limits:
+        :return:
+        """
         items = self.client.folder(folder_id=folder_id).get_items(limit=limits, offset=0)
         return items
 
     def download(self, file, destination):
+        """
+        download a file to local
+        :param file:
+        :param destination:
+        :return:
+        """
         with open(os.path.join(destination, file.name), 'wb') as f:
             self.client.file(file_id=file.id).download_to(f)
 
-    def upload(self, folder, file):
-        folder.upload(file_path=file)
+    def upload(self, folder_id, file):
+        self.client.folder(folder_id=folder_id).upload(file_path=file)
 
 
 if __name__ == '__main__':
@@ -73,6 +85,6 @@ if __name__ == '__main__':
             for each_file in test_items:
                 print(each_file)
                 box.download(each_file, '/home/zhihua/work/sunyi/temp/')
-    box.upload(folder=upload_folder, file='/home/zhihua/work/sunyi/temp/test.pdf')
+    box.upload(folder_id=upload_folder.id, file='/home/zhihua/work/sunyi/temp/test.pdf')
 
 

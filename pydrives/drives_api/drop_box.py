@@ -83,6 +83,8 @@ class DropBox:
         with open(local_file, 'rb') as f:
             data = f.read()
             self.dbx.files_upload(data, '/'.join([remote_folder, os.path.basename(local_file)]), autorename=True)
+            print(os.path.basename(local_file), 'uploaded to dropbox at', remote_folder)
+            return True
 
     def download(self, remote_file, local_folder):
         """
@@ -91,7 +93,9 @@ class DropBox:
         :param local_folder:
         :return:
         """
-        self.dbx.files_download_to_file(os.path.join(local_folder, remote_file.name), remote_file)
+        self.dbx.files_download_to_file(os.path.join(local_folder, os.path.basename(remote_file)), remote_file)
+        print(os.path.basename(remote_file), 'downloaded from dropbox to', local_folder)
+        return True
 
     def upload_folder(self, local_folder, remote_folder):
         """

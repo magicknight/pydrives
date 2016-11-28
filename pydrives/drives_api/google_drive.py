@@ -52,6 +52,7 @@ class GDrive:
         file = self.drive.CreateFile(metadata=metadata)
         file.SetContentFile(local_file)
         file.Upload()
+        print(os.path.basename(local_file), 'uploaded to google drive at', remote_folder)
         return file.metadata
 
     def download(self, remote_file, local_folder):
@@ -66,6 +67,8 @@ class GDrive:
         }
         file = self.drive.CreateFile(metadata=metadata)
         file.GetContentFile(os.path.join(local_folder, file['title']))
+        print(file['title'], 'downloaded from google drive to', local_folder)
+        return True
 
     def is_folder(self, file):
         """

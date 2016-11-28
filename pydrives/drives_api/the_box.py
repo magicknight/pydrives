@@ -5,7 +5,7 @@ import os
 from time import sleep
 from boxsdk import OAuth2
 from boxsdk import Client
-from boxsdk.object.folder import Folder
+from boxsdk.object.folder import Folder, File
 from termcolor import colored
 from pydrives.config import config
 
@@ -70,11 +70,17 @@ class Box:
         :param destination:
         :return:
         """
-        with open(os.path.join(destination, file.name), 'wb') as f:
-            self.client.file(file_id=file.id).download_to(f)
+        if not isinstance(file, File):
+            file = self.client.file(file)
+        with open(os.path.join(destination, file.get().name), 'wb') as f:
+            file.download_to(f)
+        print(file.get().name, 'downloaded from the box to', destination)
+        return True
 
     def upload(self, file, folder_id):
         self.client.folder(folder_id=folder_id).upload(file_path=file)
+        print(os.path.basename(file), 'uploaded to the box at', self.client.folder(folder_id=folder_id).get().name)
+        return True
 
     def is_folder(self, file):
         """
@@ -99,7 +105,7 @@ if __name__ == '__main__':
             for each_file in test_items:
                 print(each_file)
                 print(isinstance(each_file, Folder))
-                box.download(each_file, '/home/zhihua/work/sunyi/temp/')
+                box.download(each_file.id, '/home/zhihua/work/sunyi/temp/')
     box.upload(folder_id=upload_folder.id, file='/home/zhihua/work/sunyi/temp/test.pdf')
 
 

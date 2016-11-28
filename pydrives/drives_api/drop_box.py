@@ -2,7 +2,7 @@
 import dropbox
 from dropbox.files import FolderMetadata, FileMetadata
 from dropbox import DropboxOAuth2Flow
-
+from termcolor import colored
 from pydrives.config import config
 
 import redis
@@ -68,8 +68,9 @@ class DropBox:
             path = path.replace('//', '/')
         path = path.rstrip('/')
         res = self.dbx.files_list_folder(path)
-        for entry in res.entries:
-            print(entry.name)
+        for file in res.entries:
+            is_folder = 'folder' if self.is_folder(file) else 'file'
+            print(file.name, colored('(id: '+file.id+')', 'blue'), colored(is_folder, 'yellow'))
         return res
 
     def upload(self, local_file, remote_folder):
@@ -81,7 +82,7 @@ class DropBox:
         """
         with open(local_file, 'rb') as f:
             data = f.read()
-            self.dbx.files_upload(data, remote_folder, autorename=True)
+            self.dbx.files_upload(data, '/'.join([remote_folder, os.path.basename(local_file)]), autorename=True)
 
     def download(self, remote_file, local_folder):
         """
@@ -90,7 +91,7 @@ class DropBox:
         :param local_folder:
         :return:
         """
-        self.dbx.files_download_to_file(local_folder, remote_file)
+        self.dbx.files_download_to_file(os.path.join(local_folder, remote_file.name), remote_file)
 
     def upload_folder(self, local_folder, remote_folder):
         """
@@ -121,7 +122,9 @@ class DropBox:
                 elif each_file.startswith('@') or each_file.endswith('~'):
                     print('Skipping temporary file:', each_file)
                 else:
-                    self.upload(full_path, dropbox_file_path)
+                    with open(full_path, 'rb') as f:
+                        data = f.read()
+                        self.dbx.files_upload(data, dropbox_file_path, autorename=True)
 
     def download_folder(self, remote_folder, local_folder):
         """
@@ -140,7 +143,7 @@ class DropBox:
                     filename = str(file.name)
                     download_path = os.path.join(local_folder, filename)
                     remote_path = path + '/' + filename
-                    self.download(remote_path, download_path)
+                    self.dbx.files_download_to_file(download_path, remote_path)
                 else:
                     next_local_dir = os.path.join(local_folder, file.name)
                     next_remote_dir = '/'.join([remote_folder, file.name])
@@ -169,6 +172,14 @@ class DropBox:
         else:
             return False
 
+    def is_folder(self, file):
+        """
+        check if the file is a folder
+        :param file:
+        :return:
+        """
+        return isinstance(file, FolderMetadata)
+
 
 if __name__ == '__main__':
     drop_box = DropBox()
@@ -176,6 +187,9 @@ if __name__ == '__main__':
     print(drop_box.dbx.users_get_current_account())
     for entry in drop_box.dbx.files_list_folder('').entries:
         print(entry.name)
+        print('is folder?', drop_box.check_folder(entry.id))
+        if entry.name == 'test':
+            drop_box.upload_folder('/home/zhihua/temp', '/'+entry.name)
 
 
 

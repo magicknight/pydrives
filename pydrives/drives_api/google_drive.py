@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 from pprint import pprint
+from termcolor import colored
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
@@ -31,8 +32,10 @@ class GDrive:
         query = {
             'q': "'" + folder + "'" + ' in parents and trashed=false'
         }
-        pprint(query)
         file_list = self.drive.ListFile(query).GetList()
+        for file in file_list:
+            is_folder = 'folder' if self.is_folder(file) else 'file'
+            print(file['title'], colored('(id: '+file['id']+')', 'blue'), colored(is_folder, 'yellow'))
         return file_list
 
     def upload(self, local_file, remote_folder):
@@ -63,6 +66,17 @@ class GDrive:
         }
         file = self.drive.CreateFile(metadata=metadata)
         file.GetContentFile(os.path.join(local_folder, file['title']))
+
+    def is_folder(self, file):
+        """
+        check if a file is folder
+        :param file:
+        :return:
+        """
+        if 'folder' in file['mimeType']:
+            return True
+        else:
+            return False
 
 
 if __name__ == '__main__':

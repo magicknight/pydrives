@@ -5,6 +5,8 @@ import os
 from time import sleep
 from boxsdk import OAuth2
 from boxsdk import Client
+from boxsdk.object.folder import Folder
+from termcolor import colored
 from pydrives.config import config
 
 
@@ -56,6 +58,9 @@ class Box:
         :return:
         """
         items = self.client.folder(folder_id=folder_id).get_items(limit=limits, offset=0)
+        for file in items:
+            is_folder = 'folder' if self.is_folder(file) else 'file'
+            print(file.name, colored('(id: '+file.id+')', 'blue'), colored(is_folder, 'yellow'))
         return items
 
     def download(self, file, destination):
@@ -68,8 +73,16 @@ class Box:
         with open(os.path.join(destination, file.name), 'wb') as f:
             self.client.file(file_id=file.id).download_to(f)
 
-    def upload(self, folder_id, file):
+    def upload(self, file, folder_id):
         self.client.folder(folder_id=folder_id).upload(file_path=file)
+
+    def is_folder(self, file):
+        """
+        check if file is a folder
+        :param file:
+        :return:
+        """
+        return isinstance(file, Folder)
 
 
 if __name__ == '__main__':
@@ -78,12 +91,14 @@ if __name__ == '__main__':
     box_items = box.list(box.root_directory)
     upload_folder = None
     for each_item in box_items:
+        print(each_item)
+        print(isinstance(each_item, Folder))
         if each_item.name == 'test':
-            print(each_item)
             upload_folder = each_item
             test_items = box.list(each_item.id)
             for each_file in test_items:
                 print(each_file)
+                print(isinstance(each_file, Folder))
                 box.download(each_file, '/home/zhihua/work/sunyi/temp/')
     box.upload(folder_id=upload_folder.id, file='/home/zhihua/work/sunyi/temp/test.pdf')
 

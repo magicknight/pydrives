@@ -12,6 +12,7 @@ Ubuntu:
 sudo apt install redis
 ```
 
+##Settings
 All the settings can be modified in config.py
 
 ##Usage

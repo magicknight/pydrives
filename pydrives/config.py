@@ -2,7 +2,7 @@ config = {
     'modules': ['google_drive', 'drop_box', 'the_box'],
     'actions': ['list', 'upload', 'download'],
     'redis': {
-        'host': '104.154.43.233',
+        'host': 'localhost',
         'port': 6379,
         'db': 0
     },

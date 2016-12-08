@@ -55,7 +55,7 @@ class Box:
         list files in a remote folder
         :param folder_id:
         :param limits:
-        :return:
+        :return: a list of files metadata
         """
         items = self.client.folder(folder_id=folder_id).get_items(limit=limits, offset=0)
         for file in items:
